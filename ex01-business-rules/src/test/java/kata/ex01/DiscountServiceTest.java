@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDateTime;
 
 import static kata.ex01.model.RouteType.RURAL;
+import static kata.ex01.model.RouteType.URBAN;
+import static kata.ex01.model.VehicleFamily.OTHER;
 import static kata.ex01.model.VehicleFamily.STANDARD;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -41,15 +43,88 @@ public class DiscountServiceTest {
     }
 
     @Test
-    public void test休日朝夕は休日割が適用される() {
+    public void test開始と終了が同じ日で休日の場合はは休日割が適用される() {
         HighwayDrive drive = new HighwayDrive();
-        drive.setEnteredAt(LocalDateTime.of(2016, 4, 1, 23, 0));
-        drive.setExitedAt(LocalDateTime.of(2016, 4, 2, 6, 30));
-        drive.setDriver(driver(10));
+        drive.setEnteredAt(LocalDateTime.of(2016, 4, 2, 7, 0));
+        drive.setExitedAt(LocalDateTime.of(2016, 4, 2, 15, 30));
         drive.setVehicleFamily(STANDARD);
         drive.setRouteType(RURAL);
 
         assertThat(discountService.calc(drive)).isEqualTo(30);
+    }
+
+    @Test
+    public void test開始と終了が同じ日で平日の場合は休日割が適用されない() {
+        HighwayDrive drive = new HighwayDrive();
+        drive.setEnteredAt(LocalDateTime.of(2016, 4, 1, 23, 0));
+        drive.setExitedAt(LocalDateTime.of(2016, 4, 1, 23, 30));
+        drive.setVehicleFamily(STANDARD);
+        drive.setRouteType(RURAL);
+
+        assertThat(discountService.calc(drive)).isEqualTo(0);
+    }
+
+    @Test
+    public void test開始が平日で終了が休日の場合は割引される() {
+        HighwayDrive drive = new HighwayDrive();
+        drive.setEnteredAt(LocalDateTime.of(2016, 4, 1, 23, 0));
+        drive.setExitedAt(LocalDateTime.of(2016, 4, 2, 4, 30));
+        drive.setVehicleFamily(STANDARD);
+        drive.setRouteType(RURAL);
+
+        assertThat(discountService.calc(drive)).isEqualTo(30);
+    }
+
+    @Test
+    public void test開始が平日で終了も平日の場合は割引されない() {
+        HighwayDrive drive = new HighwayDrive();
+        drive.setEnteredAt(LocalDateTime.of(2016, 3, 31, 10, 0));
+        drive.setExitedAt(LocalDateTime.of(2016, 4, 1, 9, 30));
+        drive.setVehicleFamily(STANDARD);
+        drive.setRouteType(RURAL);
+
+        assertThat(discountService.calc(drive)).isEqualTo(0);
+    }
+
+    @Test
+    public void test開始が休日で終了も休日の場合は割引される() {
+        HighwayDrive drive = new HighwayDrive();
+        drive.setEnteredAt(LocalDateTime.of(2016, 4, 2, 10, 0));
+        drive.setExitedAt(LocalDateTime.of(2016, 4, 3, 9, 30));
+        drive.setVehicleFamily(STANDARD);
+        drive.setRouteType(RURAL);
+
+        assertThat(discountService.calc(drive)).isEqualTo(30);
+    }
+    @Test
+    public void test開始が休日で終了が平日の場合は割引される() {
+        HighwayDrive drive = new HighwayDrive();
+        drive.setEnteredAt(LocalDateTime.of(2016, 4, 3, 10, 0));
+        drive.setExitedAt(LocalDateTime.of(2016, 4, 4, 9, 30));
+        drive.setVehicleFamily(STANDARD);
+        drive.setRouteType(RURAL);
+
+        assertThat(discountService.calc(drive)).isEqualTo(30);
+    }
+    @Test
+    public void test都市部の場合は適用されない() {
+        HighwayDrive drive = new HighwayDrive();
+        drive.setEnteredAt(LocalDateTime.of(2016, 4, 3, 10, 0));
+        drive.setExitedAt(LocalDateTime.of(2016, 4, 4, 9, 30));
+        drive.setVehicleFamily(STANDARD);
+        drive.setRouteType(URBAN);
+
+        assertThat(discountService.calc(drive)).isEqualTo(0);
+    }
+    @Test
+    public void test車種がその他の場合は適用されない() {
+        HighwayDrive drive = new HighwayDrive();
+        drive.setEnteredAt(LocalDateTime.of(2016, 4, 3, 10, 0));
+        drive.setExitedAt(LocalDateTime.of(2016, 4, 4, 9, 30));
+        drive.setVehicleFamily(OTHER);
+        drive.setRouteType(RURAL);
+
+        assertThat(discountService.calc(drive)).isEqualTo(0);
     }
 
     @Test

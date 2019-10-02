@@ -1,8 +1,12 @@
 package kata.ex01;
 
 import kata.ex01.model.HighwayDrive;
+import kata.ex01.model.RouteType;
+import kata.ex01.model.VehicleFamily;
 
 import java.time.LocalDateTime;
+
+import static kata.ex01.util.HolidayUtils.isHoliday;
 
 /**
  * @author kawasima
@@ -20,6 +24,20 @@ public class DiscountServiceImpl implements DiscountService {
                 (targetEnd.isAfter(ruleStart) || targetEnd.isEqual(ruleStart))) {
             return 30;
         }
+
+        if((drive.getVehicleFamily().equals(VehicleFamily.STANDARD) ||
+                drive.getVehicleFamily().equals(VehicleFamily.MINI) ||
+                drive.getVehicleFamily().equals(VehicleFamily.MOTORCYCLE)
+        ) &&
+                drive.getRouteType().equals(RouteType.RURAL)
+                &&
+                (isHoliday(targetStart.toLocalDate()) || isHoliday(targetEnd.toLocalDate()))
+        ) {
+            return 30;
+        }
+
+
+
         return 0;
     }
 }
