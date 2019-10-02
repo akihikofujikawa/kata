@@ -3,6 +3,7 @@ package kata.ex01;
 import kata.ex01.model.Driver;
 import kata.ex01.model.HighwayDrive;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
@@ -47,6 +48,42 @@ public class DiscountServiceTest {
         drive.setDriver(driver(10));
         drive.setVehicleFamily(STANDARD);
         drive.setRouteType(RURAL);
+
+        assertThat(discountService.calc(drive)).isEqualTo(30);
+    }
+
+    @Test
+    public void test深夜は深夜割引が適用される() {
+        HighwayDrive drive = new HighwayDrive();
+        drive.setEnteredAt(LocalDateTime.of(2016, 4, 1, 1, 0));
+        drive.setExitedAt(LocalDateTime.of(2016, 4, 1, 2, 0));
+
+        assertThat(discountService.calc(drive)).isEqualTo(30);
+    }
+
+    @Test
+    public void test朝は深夜割引が適用されない() {
+        HighwayDrive drive = new HighwayDrive();
+        drive.setEnteredAt(LocalDateTime.of(2016, 4, 1, 6, 0));
+        drive.setExitedAt(LocalDateTime.of(2016, 4, 1, 9, 0));
+
+        assertThat(discountService.calc(drive)).isEqualTo(0);
+    }
+
+    @Test
+    public void test深夜割引の境界値チェック4時() {
+        HighwayDrive drive = new HighwayDrive();
+        drive.setEnteredAt(LocalDateTime.of(2016, 4, 1, 4, 0));
+        drive.setExitedAt(LocalDateTime.of(2016, 4, 1, 5, 0));
+
+        assertThat(discountService.calc(drive)).isEqualTo(30);
+    }
+
+    @Test
+    public void test深夜割引の境界値チェック0時() {
+        HighwayDrive drive = new HighwayDrive();
+        drive.setEnteredAt(LocalDateTime.of(2016, 4, 1, 23, 0));
+        drive.setExitedAt(LocalDateTime.of(2016, 4, 2, 0, 0));
 
         assertThat(discountService.calc(drive)).isEqualTo(30);
     }
